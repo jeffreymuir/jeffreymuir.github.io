@@ -30,8 +30,8 @@
     <img id="image" src="https://picsum.photos/2048" alt="Fun photos of the world" />
     <h1>Loading...</h1>
     <script>
-        function getRandomSize() {
-            return String(Math.floor(Math.random() * 100.0) + screen.width);
+        function getRandomSize(max) {
+            return String(Math.floor(Math.random() * 100.0) + max);
         }
 
         const image = document.getElementById("image");
@@ -40,7 +40,7 @@
             if (image) {
                 //console.log("Clicked");
                 image.style.display = "none";
-                image.src = "https://picsum.photos/" + getRandomSize();
+                image.src = "https://picsum.photos/" + getRandomSize(screen.width)+"/"+getRandomSize(screen.height);
             }
         };
 
