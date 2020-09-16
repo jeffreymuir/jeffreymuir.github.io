@@ -17,41 +17,109 @@
         }
 
         body {
-            background-color: black;
+            background-color: black;            
         }
 
         h1 {
+            color: white;
+        }
+
+        #info {
+            color: white;
+            margin: 0px;
+            padding: 0 10px;
+            position: absolute;
+            bottom: 2%;
+            right: 2%;
+            background-color: rgba(0,0,0,.5);
+            line-height: .5;
+        }
+
+        a {
             color:white;
         }
     </style>
 </head>
 
 <body>
-    <img id="image" src="https://picsum.photos/2048" alt="Fun photos of the world" />
     <h1>Loading...</h1>
+    <img id="image" alt="Fun photos of the world" />
+    <div id="info"></p>
     <script>
+
+        let blob
+        const image = document.getElementById("image");
+        const photoInfo = document.getElementById("info");
+
         function getRandomSize(max) {
             return String(Math.floor(Math.random() * 100.0) + max);
         }
 
-        const image = document.getElementById("image");
+        function getImageURL() {
+            return "https://picsum.photos/" + getRandomSize(screen.width) + "/" + getRandomSize(screen.height);
+        }
+
+        function getImageInfoURL(id) {
+            return "https://picsum.photos/id/"+id+"/info";
+        }
+
+        function loadImage() {
+            image.style.display = "none";
+
+            fetch(getImageURL())
+                .then(response => {
+                    const picsumId = response.headers.get("picsum-id");
+                    console.log("Picsum id", picsumId);
+                    getPhotoInfo(picsumId);
+                    return response.blob();
+                })
+                .then(data => {
+                    // Then create a local URL for that image and print it 
+                    blob = URL.createObjectURL(data)
+                    //console.log(blob)
+                    image.src = blob;
+                })
+        }
+
+        function getPhotoInfo(id) {
+            fetch(getImageInfoURL(id))
+                .then(response => {
+                    return response.json();
+                })
+                .then(info => {
+                    console.log(info.author, info.width, info.height, info.url, info.download_url)
+
+                    let values = "<p>Photographer : " + info.author + "</p>";
+                    values += "<p>W x H ("+info.width +"x"+info.height + ")</p>";
+                    values += "<p><a href="+info.url+">Unsplash page</a></p>";
+                    values += "<p><a href="+info.download_url+">Download</a></p>";
+
+                    photoInfo.innerHTML = values;
+                })
+        }
+
+
+        loadImage()
+        //image.src = getImageURL();
 
         image.onclick = function () {
             if (image) {
                 //console.log("Clicked");
-                image.style.display = "none";
-                image.src = "https://picsum.photos/" + getRandomSize(screen.width)+"/"+getRandomSize(screen.height);
+                loadImage();
             }
         };
 
-        image.onloadstart = function() {
+        image.onloadstart = function () {
             //console.log("Load started");
         }
 
-        image.onload = function() {
+        image.onload = function () {
             image.style.display = "block";
             //console.log("Loaded");
         }
+
+
+
 
     </script>
 </body>
