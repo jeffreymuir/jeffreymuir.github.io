@@ -6,17 +6,17 @@ img {
   height: 100vh;
   left: 0;
   top: 0;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 body {
   background-color: black;
-  background-image: url(loading.gif);
+  /* background-image: url(loading.gif); */
   background-repeat: no-repeat;
   background-position-x: 50%;
   background-position-y: 50%;
   height: 95vh;
-  background-size: 200px;
+  background-size: 10%;
 }
 
 h1 {

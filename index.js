@@ -1,6 +1,9 @@
-let blob;
+let blobURL;
+
 const image = document.getElementById("image");
+
 const photoInfo = document.getElementById("info");
+
 let currentURL = "";
 
 function getRandomSize (max) {
@@ -8,23 +11,61 @@ function getRandomSize (max) {
     return max;
 }
 
-function getRandomImageURL() {
-    return "https://picsum.photos/" + getRandomSize(screen.width) + "/" + getRandomSize(screen.height);
+function getRandomImageURL () {
+    return "https://picsum.photos/" + window.innerWidth + "/" + window.innerHeight;
 }
 
-function getSpecificImageURL(imageId) {
-    return "https://picsum.photos/id/"+imageId+ "/" + getRandomSize(screen.width) + "/" + getRandomSize(screen.height);
+function getSpecificImageURL (imageId, width, height) {
+    return "https://picsum.photos/id/" + imageId + "/" + width + "/" + height;
 }
 
 function getImageInfoURL (id) {
     return "https://picsum.photos/id/" + id + "/info";
 }
 
-function loadSpecificImage(id) {
-    loadImage(getSpecificImageURL(id));
+function errorPopup(response) {
+    stopProgress();
+    alert("Unable to retrieve the image. Error " + response.status);
 }
 
-function loadImage(url) {
+function startProgress() {
+    document.body.style.backgroundImage = "url(loading.gif)"
+}
+
+function stopProgress() {
+    document.body.style.backgroundImage = "url()"
+}
+
+async function loadSpecificImage (id) {
+
+    try {
+
+        startProgress();
+
+        const response = await fetch(getImageInfoURL(id));
+
+        if (response && response.ok) {
+            const imgInfo = await response.json();
+
+            if (imgInfo) {
+                loadImage(id, imgInfo);
+            }
+        }
+        else {
+            errorPopup(response);
+
+            return null;
+        }
+    }
+    catch (err) {
+        console.log(err);
+        stopProgress();
+    }
+}
+
+function loadImage (id, imgInfo) {
+
+    const url = getSpecificImageURL(id, imgInfo.width, imgInfo.height);
 
     image.style.display = "none";
     photoInfo.style.display = "none";
@@ -32,44 +73,49 @@ function loadImage(url) {
     fetch(url)
         .then(response => {
 
-            if(response.ok) {
-                const picsumId = response.headers.get("picsum-id");
-                //console.log("Picsum id", picsumId);
-                getPhotoInfo(picsumId);
-            }
+            //console.log(response);
 
-            if(response.ok) {
+            if (response.ok) {
                 return response.blob();
             }
             else {
-                alert("Unable to retrieve the image. Redirecting to another image. Error "+response.status);
-                redirect(randomId());
+                errorPopup(response);
+
                 return null;
             }
         })
-        .then(data => {
+        .then(blob => {
 
-            if(data) {
+            if (blob) {
+
+                if (blobURL) {
+                    URL.revokeObjectURL(blobURL);
+                }
+
                 // Then create a local URL for that image
-                blob = URL.createObjectURL(data);
-                image.src = blob;
+                blobURL = URL.createObjectURL(blob);
+                image.src = blobURL;
+
+                setPhotoInfo(imgInfo);
+
             }
 
-        }).catch( e => console.error(e));
+            stopProgress();
+
+        }).catch(e => console.error(e));
 }
 
-function getPhotoInfo(id) {
-    fetch(getImageInfoURL(id))
-        .then(response => {
-            return response.json();
-        })
-        .then(info => {
+function setPhotoInfo (info) {
 
-            let values = "<p>" + info.author + "</p>";
-            values += "<p><a href='" + info.url + "'>Photo Id " + info.id + "</a></p>";
+    let values = "<p><a href='" + info.url + "'>" + info.author + "</a></p>";
 
-            photoInfo.innerHTML = values;
-        });
+    values += "<p>Photo Id " + info.id + "</p>";
+
+    if (blobURL) {
+        values += "<p><a download='" + info.author + info.id + ".jpg' href='" + blobURL + "'>" + "Download" + "</a></p>";
+    }
+
+    photoInfo.innerHTML = values;
 }
 
 /**
@@ -79,12 +125,12 @@ function getPhotoInfo(id) {
  * 
  * @return {Object}     The URL parameters
  */
-function getParams(url) {
+function getParams (url) {
     const params = {};
 
     const properURL = new URL(url);
 
-    properURL.searchParams.forEach((value,key) => {params[key] = value;})
+    properURL.searchParams.forEach((value, key) => { params[ key ] = value; });
 
     return params;
 };
@@ -93,28 +139,28 @@ function randomIntFromInterval (min, max) { // min and max included
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function randomId() {
-    return randomIntFromInterval(0,1029);
+function randomId () {
+    return randomIntFromInterval(0, 1029);
 }
 
-function redirect(id) {
+function redirect (id) {
     const url = new URL(window.location.href);
     url.searchParams.delete("imageId");
     url.searchParams.append("imageId", id);
     const urlString = url.toString();
 
-    console.log(urlString);
+    //console.log(urlString);
 
     window.location.href = urlString;
 }
 
 const pageURL = window.location.href;
 
-console.log(pageURL);
+//console.log(pageURL);
 
 const params = getParams(pageURL);
 
-console.log(params);
+//console.log(params);
 
 if (!params.imageId) {
 
@@ -140,26 +186,4 @@ image.onload = function () {
     photoInfo.style.display = "block";
     //console.log("Loaded");
 };
-
-// const events = [
-//     "pagehide", "pageshow",
-//     "unload", "load"
-// ];
-
-// const eventLogger = event => {
-//     switch (event.type) {
-//         case "pagehide":
-//         case "pageshow":
-//             let isPersisted = event.persisted ? "persisted" : "not persisted";
-//             console.log('Event:', event.type, '-', isPersisted);
-//             break;
-//         default:
-//             console.log('Event:', event.type);
-//             break;
-//     }
-// };
-
-// events.forEach(eventName =>
-//     window.addEventListener(eventName, eventLogger)
-// );
 
