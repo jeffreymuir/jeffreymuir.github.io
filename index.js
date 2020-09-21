@@ -4,76 +4,34 @@ const image = document.getElementById("image");
 
 const photoInfo = document.getElementById("info");
 
-let currentURL = "";
+loadList();
 
-function getRandomSize (max) {
-    //return String(Math.floor(Math.random() * 100.0) + max);
-    return max;
-}
-
-function getRandomImageURL () {
-    return "https://picsum.photos/" + window.innerWidth + "/" + window.innerHeight;
-}
-
-function getSpecificImageURL (imageId, width, height) {
-    return "https://picsum.photos/id/" + imageId + "/" + width + "/" + height;
-}
-
-function getImageInfoURL (id) {
-    return "https://picsum.photos/id/" + id + "/info";
-}
-
-function errorPopup(response) {
+function errorPopup (response) {
     stopProgress();
     alert("Unable to retrieve the image. Error " + response.status);
 }
 
-function startProgress() {
-    document.body.style.backgroundImage = "url(loading.gif)"
+function startProgress () {
+    console.log("starting progress")
+    document.body.style.backgroundImage = "url(loading.gif)";
 }
 
-function stopProgress() {
-    document.body.style.backgroundImage = "url()"
-}
-
-async function loadSpecificImage (id) {
-
-    try {
-
-        startProgress();
-
-        const response = await fetch(getImageInfoURL(id));
-
-        if (response && response.ok) {
-            const imgInfo = await response.json();
-
-            if (imgInfo) {
-                loadImage(id, imgInfo);
-            }
-        }
-        else {
-            errorPopup(response);
-
-            return null;
-        }
-    }
-    catch (err) {
-        console.log(err);
-        stopProgress();
-    }
+function stopProgress () {
+    console.log("stopping progress")
+    document.body.style.backgroundImage = "url()";
 }
 
 function loadImage (id, imgInfo) {
 
-    const url = getSpecificImageURL(id, imgInfo.width, imgInfo.height);
+    startProgress();
+
+    const url = imgInfo.download_url;
 
     image.style.display = "none";
     photoInfo.style.display = "none";
 
     fetch(url)
         .then(response => {
-
-            //console.log(response);
 
             if (response.ok) {
                 return response.blob();
@@ -98,11 +56,16 @@ function loadImage (id, imgInfo) {
 
                 setPhotoInfo(imgInfo);
 
+                sessionStorage.setItem("imageId", `${id}`);
             }
 
             stopProgress();
 
-        }).catch(e => console.error(e));
+        }).catch(e => {
+            console.error(e)
+            stopProgress();
+        });
+
 }
 
 function setPhotoInfo (info) {
@@ -115,75 +78,192 @@ function setPhotoInfo (info) {
         values += "<p><a download='" + info.author + info.id + ".jpg' href='" + blobURL + "'>" + "Download" + "</a></p>";
     }
 
+    values += `<button onclick="nextPhoto()">Next</button>`
+
     photoInfo.innerHTML = values;
+    document.title = info.author;
 }
 
-/**
- * Get the URL parameters
- * 
- * @param  {String} url The URL
- * 
- * @return {Object}     The URL parameters
- */
-function getParams (url) {
-    const params = {};
+function nextPhoto() {
+    selectFromList();
+}
 
-    const properURL = new URL(url);
-
-    properURL.searchParams.forEach((value, key) => { params[ key ] = value; });
-
-    return params;
-};
 
 function randomIntFromInterval (min, max) { // min and max included 
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function randomId () {
-    return randomIntFromInterval(0, 1029);
+async function loadList() {
+
+    const imageId = sessionStorage.getItem("imageId");
+    if (!imageId) {
+
+        selectFromList();
+
+    } else {
+
+        const imageList = await getEntireList();
+
+        console.log(`Loading original image ${imageId}`);
+
+        if (imageId <= imageList.length) {
+            const imgInfo = imageList[ imageId ];
+
+            loadImage(imageId, imgInfo);
+        }
+        else {
+            console.log("Image id is out of range");
+        }
+
+    }
+
 }
 
-function redirect (id) {
-    const url = new URL(window.location.href);
-    url.searchParams.delete("imageId");
-    url.searchParams.append("imageId", id);
-    const urlString = url.toString();
+async function getEntireList () {
 
-    //console.log(urlString);
+    let entireList = [];
 
-    window.location.href = urlString;
-}
+    const storedList = localStorage.getItem("list");
 
-const pageURL = window.location.href;
+    if (storedList) {
 
-//console.log(pageURL);
+        const jsonList = JSON.parse(storedList);
 
-const params = getParams(pageURL);
+        console.log("Using the stored list", jsonList);
 
-//console.log(params);
+        return jsonList;
+    }
 
-if (!params.imageId) {
+    let list = await getImageList(1, 100);
 
-    redirect(randomId());
+    while (list && list.next) {
 
-} else {
-    loadSpecificImage(params.imageId);
+        entireList = [ ...entireList, ...list.list ];
+
+        console.log(entireList);
+
+        const regex = RegExp('<(.*?)>; rel="(.*?)"', 'g');
+        const listNext = list.next;
+
+        let found;
+        let url = "";
+        let rel = "";
+        list = null;
+
+        while ((found = regex.exec(listNext))) {
+
+            console.log("found", found);
+
+            if (found.length == 3) {
+                url = found[ 1 ];
+                rel = found[ 2 ];
+            }
+            else {
+                console.log("Could not find next link");
+                list = null;
+                break;
+            }
+
+            console.log(rel, url);
+
+            if (rel === "next" && url) {
+                list = await getImageListByURL(url);
+                break;
+            }
+            else if (rel === "prev") {
+                console.log("Previous entry skipped");
+            }
+            else {
+                console.log("rel not recognised");
+                list = null;
+                break;
+            }
+        }
+
+    }
+
+    entireList.sort((a, b) => {
+        return a.id - b.id;
+    });
+
+    console.log(entireList);
+
+    const listStorage = JSON.stringify(entireList);
+
+    localStorage.setItem("list", listStorage);
+
+    return entireList;
 }
 
 image.onclick = function () {
     if (image) {
-        //console.log("Clicked");
-        redirect(randomId());
+        selectFromList();
     }
-};
-
-image.onloadstart = function () {
-    //console.log("Load started");
 };
 
 image.onload = function () {
     image.style.display = "block";
     photoInfo.style.display = "block";
-    //console.log("Loaded");
 };
 
+async function selectFromList () {
+
+    const list = await getEntireList();
+
+    if (list) {
+        const selection = list[ randomIntFromInterval(0, list.length) ];
+
+        loadImage(selection.id, selection);
+    }
+}
+
+async function getImageListByURL (url) {
+
+    const response = await fetch(url);
+
+    if (response && response.ok) {
+        const list = await response.json();
+
+        next = response.headers.get("link");
+
+        console.log(next);
+
+        if (list) {
+            return { list: list, next: next };
+        }
+        else {
+            errorPopup(response);
+
+            return null;
+        }
+    }
+    else {
+        errorPopup(response);
+
+        return null;
+    }
+}
+
+
+async function getImageList (page, limit) {
+
+    let url = "https://picsum.photos/v2/list/";
+
+    if (page || limit) {
+        url += "?";
+    }
+
+    if (page) {
+        url += "page=" + page;
+    }
+
+    if (limit) {
+        if (page) {
+            url += "&";
+        }
+
+        url += "limit=" + limit;
+    }
+
+    return getImageListByURL(url);
+}
