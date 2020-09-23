@@ -4,6 +4,11 @@ const image = document.getElementById("image");
 
 const photoInfo = document.getElementById("info");
 
+let timerId = null;
+let currentInfo = null;
+let slideShowActive = false;
+let firstSlide = false;
+
 loadList();
 
 function errorPopup (response) {
@@ -12,12 +17,12 @@ function errorPopup (response) {
 }
 
 function startProgress () {
-    console.log("starting progress")
+    //console.log("starting progress")
     document.body.style.backgroundImage = "url(loading.gif)";
 }
 
 function stopProgress () {
-    console.log("stopping progress")
+    //console.log("stopping progress")
     document.body.style.backgroundImage = "url()";
 }
 
@@ -27,8 +32,12 @@ function loadImage (id, imgInfo) {
 
     const url = imgInfo.download_url;
 
-    image.style.display = "none";
-    photoInfo.style.display = "none";
+    if(!slideShowActive || firstSlide) {
+        image.style.display = "none";
+        photoInfo.style.display = "none";
+
+        firstSlide = false;
+    }
 
     fetch(url)
         .then(response => {
@@ -56,19 +65,95 @@ function loadImage (id, imgInfo) {
 
                 setPhotoInfo(imgInfo);
 
-                sessionStorage.setItem("imageId", `${id}`);
+                visitedPhoto(Number(id));
             }
 
             stopProgress();
 
         }).catch(e => {
-            console.error(e)
+            console.log(e);
             stopProgress();
         });
 
 }
 
+function isVisited (imageId) {
+
+    let visited = false;
+    let visitedJSON = readList("visited");
+
+    const index = visitedJSON.findIndex((id) => (id == imageId));
+
+    if (index > -1) {
+        visited = true;
+    }
+
+    return visited;
+}
+
+function readList (listName) {
+    let listArray = [];
+    let listData = localStorage.getItem(listName);
+
+    //console.log(listName+" data", listData);
+
+    if (typeof(listData) !== 'undefined' && listData.length > 0) {
+        try {
+            listArray = JSON.parse(listData);
+        }
+        catch {
+            console.log("Unable to parse data for "+listName);
+        }
+    }
+
+    return listArray;
+}
+
+function writeList(listName, list) {
+    try {
+        if(list) {
+            localStorage.setItem(listName, JSON.stringify(list));
+        }
+    }
+    catch {
+        console.log("Unable to set data into storage for "+listName);
+    }
+}
+
+function visitedPhoto (imageId) {
+
+    const id = Number(imageId);
+
+    sessionStorage.setItem("imageId", `${id}`);
+
+    let visitedList = readList("visited");
+
+    const index = visitedList.findIndex((id) => (id == imageId));
+
+    if (index == -1) {
+        visitedList.push(id);
+    }
+
+    visitedList.sort((a, b) => { return (a - b); });
+
+    console.log("visited list",visitedList);
+
+    writeList('visited', visitedList);
+
+    let available = readList('available');
+
+    if(available) {
+        const newAvailable = available.filter(item=>id != item)
+
+        console.log("newAvailable", newAvailable);
+
+        writeList('available', newAvailable);
+    }
+}
+
 function setPhotoInfo (info) {
+
+    currentInfo = info;
 
     let values = "<p><a href='" + info.url + "'>" + info.author + "</a></p>";
 
@@ -78,14 +163,34 @@ function setPhotoInfo (info) {
         values += "<p><a download='" + info.author + info.id + ".jpg' href='" + blobURL + "'>" + "Download" + "</a></p>";
     }
 
-    values += `<button onclick="nextPhoto()">Next</button>`
+    if (timerId == null) {
+        values += `<button onclick="nextPhoto()">Next</button>`;
+
+        values += `<button onclick="startSlideShow()">Play</button>`;
+    } else {
+        values += `<button onclick="stopSlideShow()">Stop</button>`;
+    }
 
     photoInfo.innerHTML = values;
     document.title = info.author;
 }
 
-function nextPhoto() {
+function nextPhoto () {
     selectFromList();
+}
+
+function startSlideShow () {
+    firstSlide = true;
+    nextPhoto();
+    timerId = window.setInterval(nextPhoto, 10000);
+    slideShowActive = true;
+}
+
+function stopSlideShow () {
+    window.clearInterval(timerId);
+    timerId = null;
+    setPhotoInfo(currentInfo);
+    slideShowActive = false;
 }
 
 
@@ -93,54 +198,97 @@ function randomIntFromInterval (min, max) { // min and max included
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-async function loadList() {
+async function loadList () {
 
     const imageId = sessionStorage.getItem("imageId");
-    if (!imageId) {
 
-        selectFromList();
+    console.log("get imageId = ", imageId);
+
+    if (imageId) {
+
+        const imagesLoaded = (list) => {
+            let loaded = false;
+
+            if (list) {
+                const foundItem = list.findIndex(item => item.id === imageId);
+
+                if (foundItem > -1) {
+                    console.log(`Loading original image ${imageId}`);
+
+                    loadImage(imageId, list[ foundItem ]);
+                    loaded = true;
+                }
+            }
+
+            return loaded;
+        };
+
+        getEntireList(imagesLoaded);
 
     } else {
 
-        const imageList = await getEntireList();
+        let loaded = false;
 
-        console.log(`Loading original image ${imageId}`);
+        const imagesLoaded = (list) => {
 
-        if (imageId <= imageList.length) {
-            const imgInfo = imageList[ imageId ];
+            if (list && !loaded) {
+                const selection = list[ randomIntFromInterval(0, list.length - 1) ];
 
-            loadImage(imageId, imgInfo);
-        }
-        else {
-            console.log("Image id is out of range");
-        }
+                const id = selection.id;
+
+                console.log(`Loading image ${id}`);
+
+                loadImage(id, selection);
+                loaded = true;
+            }
+
+            return loaded;
+        };
+
+        getEntireList(imagesLoaded);
 
     }
-
 }
 
-async function getEntireList () {
+function getImageIds(list) {
+    return list.map((item)=>{
+        return Number(item.id);
+    })
+}
+
+async function getEntireList (cb) {
 
     let entireList = [];
 
-    const storedList = localStorage.getItem("list");
+    const list = readList("list");
 
-    if (storedList) {
+    if (list) {
 
-        const jsonList = JSON.parse(storedList);
+        if (cb) {
+            cb(list);
+        }
 
-        console.log("Using the stored list", jsonList);
+        const available = readList('available'); 
 
-        return jsonList;
+        if(available.length === 0) {
+            const ids = getImageIds(list);
+            writeList('available', ids);
+        }
+
+        return list;
     }
 
-    let list = await getImageList(1, 100);
+    list = await getImageList(1, 100);
 
     while (list && list.next) {
 
+        if (cb) {
+            cb(list.list);
+        }
+
         entireList = [ ...entireList, ...list.list ];
 
-        console.log(entireList);
+        //console.log(entireList);
 
         const regex = RegExp('<(.*?)>; rel="(.*?)"', 'g');
         const listNext = list.next;
@@ -186,11 +334,15 @@ async function getEntireList () {
         return a.id - b.id;
     });
 
-    console.log(entireList);
+    //console.log(entireList);
 
-    const listStorage = JSON.stringify(entireList);
+    writeList('list', entireList);
 
-    localStorage.setItem("list", listStorage);
+    const imageIds = getImageIds(entireList);
+
+    writeList('available', imageIds);
+
+    console.log("available",imageIds);
 
     return entireList;
 }
@@ -211,9 +363,22 @@ async function selectFromList () {
     const list = await getEntireList();
 
     if (list) {
-        const selection = list[ randomIntFromInterval(0, list.length) ];
 
-        loadImage(selection.id, selection);
+        let available = readList('available');
+
+        const randomId = available[randomIntFromInterval(0, available.length - 1)];
+
+        const foundIndex = list.findIndex(item=>randomId == item.id)
+
+        if(foundIndex != -1) {
+            const selection = list[ foundIndex ];
+
+            loadImage(selection.id, selection);
+
+            available = available.filter(item => item.id != randomId);
+
+            writeList('available', available);
+        }
     }
 }
 
