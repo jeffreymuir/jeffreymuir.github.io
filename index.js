@@ -16,6 +16,11 @@ function errorPopup (response) {
     alert("Unable to retrieve the image. Error " + response.status);
 }
 
+function exceptionPopup (err) {
+    stopProgress();
+    alert("Unable to retrieve the image. Error " + err);
+}
+
 function startProgress () {
     //console.log("starting progress")
     document.body.style.backgroundImage = "url(loading.gif)";
@@ -73,22 +78,9 @@ function loadImage (id, imgInfo) {
         }).catch(e => {
             console.log(e);
             stopProgress();
+            //exceptionPopup(e);
         });
 
-}
-
-function isVisited (imageId) {
-
-    let visited = false;
-    let visitedJSON = readList("visited");
-
-    const index = visitedJSON.findIndex((id) => (id == imageId));
-
-    if (index > -1) {
-        visited = true;
-    }
-
-    return visited;
 }
 
 function readList (listName) {
@@ -126,28 +118,20 @@ function visitedPhoto (imageId) {
 
     sessionStorage.setItem("imageId", `${id}`);
 
-    let visitedList = readList("visited");
-
-    const index = visitedList.findIndex((id) => (id == imageId));
-
-    if (index == -1) {
-        visitedList.push(id);
-    }
-
-    visitedList.sort((a, b) => { return (a - b); });
-
-    console.log("visited list",visitedList);
-
-    writeList('visited', visitedList);
-
     let available = readList('available');
 
     if(available) {
         const newAvailable = available.filter(item=>id != item)
 
-        console.log("newAvailable", newAvailable);
+        console.log("available size=", newAvailable.length);
 
-        writeList('available', newAvailable);
+        // if we have run out of photos, need to start over again
+        if(newAvailable.length === 0) {
+            resetAvailable();
+        }
+        else {
+            writeList('available', newAvailable);
+        }
     }
 }
 
@@ -271,9 +255,10 @@ async function getEntireList (cb) {
         const available = readList('available'); 
 
         if(available.length === 0) {
-            const ids = getImageIds(list);
-            writeList('available', ids);
+            initAvailable(list);
         }
+
+        initAllIds(list);
 
         return list;
     }
@@ -334,18 +319,42 @@ async function getEntireList (cb) {
         return a.id - b.id;
     });
 
-    //console.log(entireList);
-
     writeList('list', entireList);
 
-    const imageIds = getImageIds(entireList);
-
-    writeList('available', imageIds);
-
-    console.log("available",imageIds);
+    initLists(entireList);
 
     return entireList;
 }
+
+function initLists(list) {
+
+    const imageIds = getImageIds(list);
+
+    writeList('available', imageIds);
+    writeList('allIds', imageIds);
+
+    console.log("available", imageIds);
+}
+
+function initAvailable(list) {
+    const imageIds = getImageIds(list);
+
+    writeList('available', imageIds);
+}
+
+function initAllIds (list) {
+    const imageIds = getImageIds(list);
+
+    writeList('allIds', imageIds);
+}
+
+function resetAvailable() {
+
+    const list = readList('allIds');
+
+    writeList('available', list);
+}
+
 
 image.onclick = function () {
     if (image) {
