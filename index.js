@@ -87,9 +87,7 @@ function readList (listName) {
     let listArray = [];
     let listData = localStorage.getItem(listName);
 
-    //console.log(listName+" data", listData);
-
-    if (typeof(listData) !== 'undefined' && listData.length > 0) {
+    if (listData && listData.length > 0) {
         try {
             listArray = JSON.parse(listData);
         }
@@ -118,15 +116,20 @@ function visitedPhoto (imageId) {
 
     sessionStorage.setItem("imageId", `${id}`);
 
+    removeAvailable(id);
+}
+
+// remove the specified photo id from the available list
+function removeAvailable(id) {
     let available = readList('available');
 
-    if(available) {
-        const newAvailable = available.filter(item=>id != item)
+    if (available) {
+        const newAvailable = available.filter(item => id != item);
 
         console.log("available size=", newAvailable.length);
 
         // if we have run out of photos, need to start over again
-        if(newAvailable.length === 0) {
+        if (newAvailable.length === 0) {
             resetAvailable();
         }
         else {
@@ -244,9 +247,9 @@ async function getEntireList (cb) {
 
     let entireList = [];
 
-    const list = readList("list");
+    let list = readList("list");
 
-    if (list) {
+    if (list && (list.length > 0)) {
 
         if (cb) {
             cb(list);
@@ -352,7 +355,9 @@ function resetAvailable() {
 
     const list = readList('allIds');
 
-    writeList('available', list);
+    if(list) {
+        writeList('available', list);
+    }
 }
 
 
