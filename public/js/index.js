@@ -1,13 +1,17 @@
 let blobURL;
+let currentBlob;
 
 const image = document.getElementById("image");
 
 const photoInfo = document.getElementById("info");
 
+const loadingImg = document.getElementById("loading");
+
 let timerId = null;
 let currentInfo = null;
 let slideShowActive = false;
 let firstSlide = false;
+let hearted = false;
 
 loadList();
 
@@ -23,12 +27,14 @@ function exceptionPopup (err) {
 
 function startProgress () {
     //console.log("starting progress")
-    document.body.style.backgroundImage = "url(loading.gif)";
+    //document.body.style.backgroundImage = "url(public/image/loading-clear.gif)";
+    loadingImg.style.display = "block";
 }
 
 function stopProgress () {
     //console.log("stopping progress")
-    document.body.style.backgroundImage = "url()";
+    //document.body.style.backgroundImage = "url()";
+    loadingImg.style.display = "none";
 }
 
 function loadImage (id, imgInfo) {
@@ -38,8 +44,8 @@ function loadImage (id, imgInfo) {
     const url = imgInfo.download_url;
 
     if(!slideShowActive || firstSlide) {
-        image.style.display = "none";
-        photoInfo.style.display = "none";
+        //image.style.display = "none";
+        //photoInfo.style.display = "none";
 
         firstSlide = false;
     }
@@ -60,6 +66,7 @@ function loadImage (id, imgInfo) {
 
             if (blob) {
 
+                // delete the old blobURL
                 if (blobURL) {
                     URL.revokeObjectURL(blobURL);
                 }
@@ -68,7 +75,8 @@ function loadImage (id, imgInfo) {
                 blobURL = URL.createObjectURL(blob);
                 image.src = blobURL;
 
-                setPhotoInfo(imgInfo);
+                currentBlob = blob;
+                setPhotoInfo(imgInfo,blob);
 
                 visitedPhoto(Number(id));
             }
@@ -117,6 +125,8 @@ function visitedPhoto (imageId) {
     sessionStorage.setItem("imageId", `${id}`);
 
     removeAvailable(id);
+
+    hearted = false;
 }
 
 // remove the specified photo id from the available list
@@ -138,28 +148,59 @@ function removeAvailable(id) {
     }
 }
 
-function setPhotoInfo (info) {
+function replaceAll (str, find, replace) {
+    return str.replace(new RegExp(find, 'g'), replace);
+}
+
+function setPhotoInfo (info,blob) {
 
     currentInfo = info;
 
-    let values = "<p><a href='" + info.url + "'>" + info.author + "</a></p>";
+    const heart = !hearted ? "♡" : "❤️";
 
-    values += "<p>Photo Id " + info.id + "</p>";
-
+    let values = `<p><button><a href='${info.url}'>${info.author} on Unsplash</a></button><button onclick="setHeart()">${heart}</button></p>`;
+    
     if (blobURL) {
-        values += "<p><a download='" + info.author + info.id + ".jpg' href='" + blobURL + "'>" + "Download" + "</a></p>";
+        let filename = info.author+"-"+info.id+".jpg";
+
+        filename = replaceAll(filename," ","-");
+
+        values += `<button><a download='${filename}' href='${blobURL}'>Download ↓</a></button>`;
     }
 
     if (timerId == null) {
-        values += `<button onclick="nextPhoto()">Next</button>`;
+        values += `<button onclick="nextPhoto()">Next ⇥</button>`;
 
-        values += `<button onclick="startSlideShow()">Play</button>`;
+        values += `<button onclick="startSlideShow()">Play ►</button>`;
     } else {
-        values += `<button onclick="stopSlideShow()">Stop</button>`;
+        values += `<button onclick="stopSlideShow()">Stop ◼︎</button>`;
     }
+
+    let megaPixel = getFriendlySize(info.width * info.height,"P");
+
+    let dimensions = "(" + info.width + " x " + info.height + ") Pixels="+megaPixel;
+
+    values+= `<p>ID=${info.id}`;
+    if(blob) {
+        values += `  Size=${getFriendlySize(blob.size,"B")}`;
+    }
+    values += `  ${dimensions}</p>`
 
     photoInfo.innerHTML = values;
     document.title = info.author;
+}
+
+function getFriendlySize(size,suffix) {
+
+    let sizeString = String(size)+suffix;
+
+    if(size >= (1024*1024)) {
+        sizeString = String((size/(1024*1024)).toFixed(1)) + "M"+suffix;
+    } else if (size >= 1024) {
+        sizeString = String((size / (1024)).toFixed(1)) + "K"+suffix;
+    }
+
+    return sizeString;
 }
 
 function nextPhoto () {
@@ -176,8 +217,13 @@ function startSlideShow () {
 function stopSlideShow () {
     window.clearInterval(timerId);
     timerId = null;
-    setPhotoInfo(currentInfo);
+    setPhotoInfo(currentInfo,currentBlob);
     slideShowActive = false;
+}
+
+function setHeart() {
+    hearted = !hearted;
+    setPhotoInfo(currentInfo, currentBlob);
 }
 
 
