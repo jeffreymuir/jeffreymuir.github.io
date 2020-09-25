@@ -1,3 +1,5 @@
+import quotes from "./quotes.js";
+
 let blobURL;
 let currentBlob;
 
@@ -7,11 +9,14 @@ const photoInfo = document.getElementById("info");
 
 const loadingImg = document.getElementById("loading");
 
+const quote = document.getElementById("quote");
+
 let timerId = null;
 let currentInfo = null;
 let slideShowActive = false;
 let firstSlide = false;
 let hearted = false;
+let hidden = false;
 
 loadList();
 
@@ -43,9 +48,7 @@ function loadImage (id, imgInfo) {
 
     const url = imgInfo.download_url;
 
-    if(!slideShowActive || firstSlide) {
-        //image.style.display = "none";
-        //photoInfo.style.display = "none";
+    if (!slideShowActive || firstSlide) {
 
         firstSlide = false;
     }
@@ -75,8 +78,9 @@ function loadImage (id, imgInfo) {
                 blobURL = URL.createObjectURL(blob);
                 image.src = blobURL;
 
+                hearted = false;
                 currentBlob = blob;
-                setPhotoInfo(imgInfo,blob);
+                setPhotoInfo(imgInfo, blob);
 
                 visitedPhoto(Number(id));
             }
@@ -100,21 +104,21 @@ function readList (listName) {
             listArray = JSON.parse(listData);
         }
         catch {
-            console.log("Unable to parse data for "+listName);
+            console.log("Unable to parse data for " + listName);
         }
     }
 
     return listArray;
 }
 
-function writeList(listName, list) {
+function writeList (listName, list) {
     try {
-        if(list) {
+        if (list) {
             localStorage.setItem(listName, JSON.stringify(list));
         }
     }
     catch {
-        console.log("Unable to set data into storage for "+listName);
+        console.log("Unable to set data into storage for " + listName);
     }
 }
 
@@ -125,12 +129,10 @@ function visitedPhoto (imageId) {
     sessionStorage.setItem("imageId", `${id}`);
 
     removeAvailable(id);
-
-    hearted = false;
 }
 
 // remove the specified photo id from the available list
-function removeAvailable(id) {
+function removeAvailable (id) {
     let available = readList('available');
 
     if (available) {
@@ -152,18 +154,18 @@ function replaceAll (str, find, replace) {
     return str.replace(new RegExp(find, 'g'), replace);
 }
 
-function setPhotoInfo (info,blob) {
+function setPhotoInfo (info, blob) {
 
     currentInfo = info;
 
     const heart = !hearted ? "♡" : "❤️";
 
     let values = `<p><button><a href='${info.url}'>${info.author} on Unsplash</a></button><button onclick="setHeart()">${heart}</button></p>`;
-    
-    if (blobURL) {
-        let filename = info.author+"-"+info.id+".jpg";
 
-        filename = replaceAll(filename," ","-");
+    if (blobURL) {
+        let filename = info.author + "-" + info.id + ".jpg";
+
+        filename = replaceAll(filename, " ", "-");
 
         values += `<button><a download='${filename}' href='${blobURL}'>Download ↓</a></button>`;
     }
@@ -176,28 +178,39 @@ function setPhotoInfo (info,blob) {
         values += `<button onclick="stopSlideShow()">Stop ◼︎</button>`;
     }
 
-    let megaPixel = getFriendlySize(info.width * info.height,"P");
+    let megaPixel = getFriendlySize(info.width * info.height, "P");
 
-    let dimensions = "(" + info.width + " x " + info.height + ") Pixels="+megaPixel;
+    let dimensions = "Pixels=" + megaPixel+" (" + info.width + " x " + info.height + ")";
 
-    values+= `<p>ID=${info.id}`;
-    if(blob) {
-        values += `  Size=${getFriendlySize(blob.size,"B")}`;
+    values += `<p>ID=${info.id}`;
+    if (blob) {
+        values += `  Size=${getFriendlySize(blob.size, "B")}</p>`;
     }
-    values += `  ${dimensions}</p>`
+    else {
+        values += "</p>";
+    }
+    values += `<p>${dimensions}</p>`;
 
     photoInfo.innerHTML = values;
     document.title = info.author;
+
+    if (quotes.length > 0) {
+        const currentquote = quotes[ randomIntFromInterval(0, quotes.length - 1) ];
+
+        const quoteText = `${currentquote.content}<br><em class="author">${currentquote.author}</em>`;
+
+        quote.innerHTML = quoteText;
+    }
 }
 
-function getFriendlySize(size,suffix) {
+function getFriendlySize (size, suffix) {
 
-    let sizeString = String(size)+suffix;
+    let sizeString = String(size) + suffix;
 
-    if(size >= (1024*1024)) {
-        sizeString = String((size/(1024*1024)).toFixed(1)) + "M"+suffix;
+    if (size >= (1024 * 1024)) {
+        sizeString = String((size / (1024 * 1024)).toFixed(1)) + "M" + suffix;
     } else if (size >= 1024) {
-        sizeString = String((size / (1024)).toFixed(1)) + "K"+suffix;
+        sizeString = String((size / (1024)).toFixed(1)) + "K" + suffix;
     }
 
     return sizeString;
@@ -206,26 +219,32 @@ function getFriendlySize(size,suffix) {
 function nextPhoto () {
     selectFromList();
 }
+window.nextPhoto = nextPhoto
 
 function startSlideShow () {
     firstSlide = true;
     nextPhoto();
-    timerId = window.setInterval(nextPhoto, 10000);
+    timerId = window.setInterval(nextPhoto, 30000);
     slideShowActive = true;
 }
+
+window.startSlideShow = startSlideShow;
 
 function stopSlideShow () {
     window.clearInterval(timerId);
     timerId = null;
-    setPhotoInfo(currentInfo,currentBlob);
+    setPhotoInfo(currentInfo, currentBlob);
     slideShowActive = false;
 }
 
-function setHeart() {
+window.stopSlideShow = stopSlideShow;
+
+function setHeart () {
     hearted = !hearted;
     setPhotoInfo(currentInfo, currentBlob);
 }
 
+window.setHeart = setHeart;
 
 function randomIntFromInterval (min, max) { // min and max included 
     return Math.floor(Math.random() * (max - min + 1) + min);
@@ -283,10 +302,10 @@ async function loadList () {
     }
 }
 
-function getImageIds(list) {
-    return list.map((item)=>{
+function getImageIds (list) {
+    return list.map((item) => {
         return Number(item.id);
-    })
+    });
 }
 
 async function getEntireList (cb) {
@@ -301,9 +320,9 @@ async function getEntireList (cb) {
             cb(list);
         }
 
-        const available = readList('available'); 
+        const available = readList('available');
 
-        if(available.length === 0) {
+        if (available.length === 0) {
             initAvailable(list);
         }
 
@@ -375,7 +394,7 @@ async function getEntireList (cb) {
     return entireList;
 }
 
-function initLists(list) {
+function initLists (list) {
 
     const imageIds = getImageIds(list);
 
@@ -385,7 +404,7 @@ function initLists(list) {
     console.log("available", imageIds);
 }
 
-function initAvailable(list) {
+function initAvailable (list) {
     const imageIds = getImageIds(list);
 
     writeList('available', imageIds);
@@ -397,11 +416,11 @@ function initAllIds (list) {
     writeList('allIds', imageIds);
 }
 
-function resetAvailable() {
+function resetAvailable () {
 
     const list = readList('allIds');
 
-    if(list) {
+    if (list) {
         writeList('available', list);
     }
 }
@@ -409,7 +428,17 @@ function resetAvailable() {
 
 image.onclick = function () {
     if (image) {
-        selectFromList();
+        hidden = !hidden;
+
+        if (hidden) {
+            //image.style.display = "none";
+            photoInfo.style.display = "none";
+            quote.style.display = "none";
+        }
+        else {
+            photoInfo.style.display = "block";
+            quote.style.display = "block";
+        }
     }
 };
 
@@ -426,11 +455,11 @@ async function selectFromList () {
 
         let available = readList('available');
 
-        const randomId = available[randomIntFromInterval(0, available.length - 1)];
+        const randomId = available[ randomIntFromInterval(0, available.length - 1) ];
 
-        const foundIndex = list.findIndex(item=>randomId == item.id)
+        const foundIndex = list.findIndex(item => randomId == item.id);
 
-        if(foundIndex != -1) {
+        if (foundIndex != -1) {
             const selection = list[ foundIndex ];
 
             loadImage(selection.id, selection);
