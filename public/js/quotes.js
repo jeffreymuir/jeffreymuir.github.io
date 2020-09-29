@@ -3,7 +3,7 @@
 const quotes = [
     {
         content:"Innovation is taking two things that exist and putting them together in a new way.",
-        author:"Tom Freston, Co-founder of MTV"
+        author:"Tom Freston"
     },
     {
         content:"The value of an idea lies in the using of it.",
@@ -11,27 +11,27 @@ const quotes = [
     },
     {
         content:"What is the calculus of innovation? The calculus of innovation is really quite simple: Knowledge drives innovation, innovation drives productivity, productivity drives economic growth.",
-        author:"William Brody, Scientist"
+        author:"William Brody"
     },
     {
         content:"Innovation is the unrelenting drive to break the status quo and develop anew where few have dared to go.",
-        author: "Steven Jeffes, Marketing"
+        author: "Steven Jeffes"
     },
     {
         content:"Creativity is thinking up new things. Innovation is doing new things.",
-        author:"Theodore Levitt, Economist"
+        author:"Theodore Levitt"
     },
     {
         content: "Innovation takes birth in sync with the evolution of customer’s expectations and demands or vice versa. Either way, organizations around the world have to continually innovate themselves and keep up with the people’s wants. The failure to do so or being indifferent to your customer’s need will make your competitors win. And then suddenly, customers become indifferent to you- a high-risk gamble to play at.",
-        author: "Ketan Kapoor, Co-founder of Mercer-Mettl"
+        author: "Ketan Kapoor"
     },
     {
         content: "If you look at history, innovation doesn’t come just from giving people incentives; it comes from creating environments where their ideas can connect.",
-        author: "Steven Johnson, Author"
+        author: "Steven Johnson"
     },
     {
         content: "I believe you have to be willing to be misunderstood if you're going to innovate.",
-        author: "Jeff Bezos, Founder of Amazon "
+        author: "Jeff Bezos"
     },
     {
         content: "If I had asked the public what they wanted, they would have said a faster horse.",
@@ -43,23 +43,23 @@ const quotes = [
     },
     {
         content: "When the winds of change blow, some people build walls and others build windmills.",
-        author: "Unknown, Proverb"
+        author: "Proverb"
     },
     {
         content: "The reasonable man adapts himself to the world; the unreasonable one persists in trying to adapt the world to himself. Therefore all progress depends on the unreasonable man.",
-        author: "George Bernard Shaw, Playwright"
+        author: "George Bernard Shaw"
     },
     {
         content: "To stay ahead in innovation, look at horizontal industries and the ones leading your current industry, someone is always doing something new.",
-        author: "Jeff Butler, Author"
+        author: "Jeff Butler"
     },
     {
         content: "The best way to predict the future is to create it.",
-        author: "Alan Kay, Scientist"
+        author: "Alan Kay"
     },
     {
         content: "I skate to where the puck is going, not where it has been.",
-        author: "Wayne Gretsky, Hockey player"
+        author: "Wayne Gretsky"
     },
     {
         content: "Innovation is progress in the face of tradition.",
@@ -67,7 +67,7 @@ const quotes = [
     },
     { 
         content: "You can’t allow tradition to get in the way of innovation. There’s a need to respect the past, but it’s a mistake to revere your past.",
-        author:"Bob Iger,Media executive"
+        author:"Bob Iger"
     },
     {
         content: "Insanity is doing the same thing over and over again and expecting different results.",
@@ -79,19 +79,19 @@ const quotes = [
     },
     {
         content:"They always say time changes things, but you actually have to change them yourself.",
-        author:"Andy Warhol, Artist"
+        author:"Andy Warhol"
     },
     {
         content: "Don’t be afraid to take big steps when one is indicated. You can’t cross a chasm in two small jumps.",
-        author: "David Lloyd George, Politician"
+        author: "David Lloyd George"
     },
     {
         content: "The riskiest thing we can do is just maintain the status quo.",
-        author: "Bob Iger, Media executive"
+        author: "Bob Iger"
     },
     {
         content: "Be an innovator, not an imitator.",
-        author: "Audrey Carballo, CEO at Phoenix1"
+        author: "Audrey Carballo"
     },
     {
         content: "There’s a way to do it better. Find it.",
@@ -115,7 +115,7 @@ const quotes = [
     },
     {
         content: "Confusion is a word we have invented for an order that is not yet understood.",
-        author: "Henry Miller, Writer"
+        author: "Henry Miller"
     },
     {
         content: "When looking to innovate—fail forward. Innovation can be a chaotic process, embrace it and learn from your failures.",
@@ -131,7 +131,7 @@ const quotes = [
     },
     {
         content: "A ship is safe in harbor, but that’s not what ships are for.",
-        author: "William Shedd, Theologian"
+        author: "William Shedd"
     },
     {
         content: "There is no innovation and creativity without failure. Period.",
@@ -143,7 +143,7 @@ const quotes = [
     },
     {
         content:"Innovation- any new idea- by definition will not be accepted at first. It takes repeated attempts, endless demonstrations, monotonous rehearsals before innovation can be accepted and internalized by an organization. This requires courageous patience.",
-        author:"Warren Bennis, Author"
+        author:"Warren Bennis"
     },
     {
         content:"Everything you’ve ever wanted is on the other side of fear.",
@@ -202,11 +202,323 @@ const quotes = [
         author: "Ancient proverb"
     },
     {
-        content: "",
-        author: ""
+        content: "Daring ideas are like chessmen moved forward; they may be beaten, but they may start a winning game",
+        author: "William Blake"
     },
-    
-    
+    {
+        content: "Short cuts make long delays.",
+        author: "J.R.R. Tolkien"
+    },
+    {
+        content: "A pile of rocks ceases to be a rock pile when somebody contemplates it with the idea of a cathedral in mind.",
+        author: "Antoine Saint-Exupéry"
+    },
+    {
+        content: "The world needs dreamers and the world needs doers. But above all what the world needs most are dreamers that do.",
+        author: "Sarah Ban Breathnach"
+    },
+    {
+        content: "The creation of a thousand forests is in one acorn.",
+        author: "Ralph Waldo Emerson"
+    },
+    {
+        content: "You can’t use up creativity. The more you use, the more you have.",
+        author: "Maya Angelou"
+    },
+    {
+        content: "The Stone Age didn’t end because they ran out of stones.",
+        author: "Unknown"
+    },
+    {
+        content: "They did not know it was impossible so they did it.",
+        author: "Mark Twain"
+    },
+    {
+        content: "If the only tool you have is a hammer, you tend to see every problem as a nail.",
+        author: "Abraham Maslow"
+    },
+    {
+        content: "Finding opportunity is a matter of believing it’s there.",
+        author: "Barbara Corcoran"
+    },
+    {
+        content: "The uncreative mind can spot wrong answers, but it takes a very creative mind to spot wrong questions.",
+        author: "Antony Jay"
+    },
+    {
+        content: "Modern society is built upon two things: truth, which is discovered, and innovation, which is created.",
+        author: "True Tamplin"
+    },
+    {
+        content: "When something is important enough, you do it even if the odds are not in your favor.",
+        author: "Elon Musk"
+    },
+    {
+        content: "Genius is one percent inspiration, ninety-nine percent perspiration.",
+        author: "Thomas Edison"
+    },
+    {
+        content: "Before anything else, preparation is the key to success.",
+        author: "Alexander Graham Bell"
+    },
+    {
+        content: "All creative people want to do the unexpected.",
+        author: "Hedy Lamarr"
+    },
+    {
+        content: "Either write something worth reading or do something worth writing.",
+        author: "Benjamin Franklin"
+    },
+    {
+        content: "Education is the key to unlock the golden door of freedom.",
+        author: "George Washington Carver"
+    },
+    {
+        content: "If we worked on the assumption that what is accepted as true really is true, then there would be little hope for advance.",
+        author: "Orville and Wilbur Wright"
+    },
+    {
+        content: "Science knows no country, because knowledge belongs to humanity, and is the torch which illuminates the world.",
+        author: "Louis Pasteur"
+    },
+    {
+        content:"Innovation distinguishes between a leader and a follower.",
+        author:"Steve Jobs"
+    },
+    {
+        content:"Business has only two functions - marketing and innovation.",
+        author:"Milan Kundera"
+    },
+    {
+        content: "The true sign of intelligence is not knowledge but imagination.",
+        author: "Albert Einstein"
+    },
+    {
+        content: "Without change there is no innovation, creativity, or incentive for improvement. Those who initiate change will have a better opportunity to manage the change that is inevitable.",
+        author: "William Pollard"
+    },
+    {
+        content: "Our future growth relies on competitiveness and innovation, skills and productivity... and these in turn rely on the education of our people.",
+        author: "Julia Gillard"
+    },
+    {
+        content: "Every once in a while, a new technology, an old problem, and a big idea turn into an innovation.",
+        author: "Dean Kamen"
+    },
+    {
+        content: "Software innovation, like almost every other kind of innovation, requires the ability to collaborate and share ideas with other people, and to sit down and talk with customers and get their feedback and understand their needs.",
+        author: "Bill Gates"
+    },
+    {
+        content: "Without tradition, art is a flock of sheep without a shepherd. Without innovation, it is a corpse.",
+        author: "Winston Churchill"
+    },
+    {
+        content: "For good ideas and true innovation, you need human interaction, conflict, argument, debate.",
+        author: "Margaret Heffernan"
+    },
+    {
+        content: "Changes call for innovation, and innovation leads to progress.",
+        author: "Li Keqiang"
+    },
+    {
+        content: "There are different ways to do innovation. You can plant a lot of seeds, not be committed to any particular one of them, but just see what grows. And this really isn’t how we’ve approached this. We go mission-first, then focus on the pieces we need and go deep on them and be committed to them.",
+        author: "Mark Zuckerberg"
+    },
+    {
+        content:"Exploration is the engine that drives innovation.Innovation drives economic growth.",
+        author: "Edith Widder"
+    },    
+    {
+        content: "The only way you survive is you continuously transform into something else.It’s this idea of continuous transformation that makes you an innovation company.",
+        author:"Ginni Rometty"
+    },
+    {
+        content: "You can expect no influence if you are not susceptible to influence.",
+        author: "Carl Jung"
+    },
+    {
+        content: "If you have always done it that way, it is probably wrong.",
+        author: "Charles Kettering"
+    },
+    {
+        content: "There is only one thing stronger than all the armies of the world: and that is an idea whose time has come.",
+        author: "Victor Hugo"
+    },
+    {
+        content: "There’s no good idea that cannot be improved on.",
+        author: "Michael Eisner"
+    },
+    {
+        content: "What is now proved was once only imagined.",
+        author: "William Blake"
+    },
+    {
+        content: "Collaboration is important not just because it's a better way to learn. The spirit of collaboration is penetrating every institution and all of our lives. So learning to collaborate is part of equipping yourself for effectiveness, problem solving, innovation and life-long learning in an ever-changing networked economy.",
+        author: "Don Tapscott"
+    },
+    {
+        content: "Imagination is not only the uniquely human capacity to envision that which is not, and therefore the fount of all invention and innovation. In its arguably most transformative and revelatory capacity, it is the power to that enables us to empathize with humans whose experiences we have never shared.",
+        author: "J. K. Rowling"
+    },
+    {
+        content: "Once you have an innovation culture, even those who are not scientists or engineers - poets, actors, journalists - they, as communities, embrace the meaning of what it is to be scientifically literate. They embrace the concept of an innovation culture. They vote in ways that promote it. They don't fight science and they don't fight technology.",
+        author: "Neil deGrasse Tyson"
+    },
+    {
+        content: "The five essential entrepreneurial skills for success: Concentration, Discrimination, Organization, Innovation and Communication.",
+        author: "Harold S. Geneen"
+    },
+    {
+        content: "Ultimately, progress and innovation win.",
+        author: "Travis Kalanick"
+    },
+    {
+        content: "Most people have a very strong sense of organizational ownership, but I think what people have to own is an innovation agenda, and everything is shared in terms of the implementation.",
+        author: "Satya Nadella"
+    },
+    {
+        content: "New ideas for innovation grow out of the minds of each new generation. Having an institution of higher learning that can help young people put those ideas into action is critical.",
+        author: "Jay Samit"
+    },
+
+    {
+        content: "Innovation is the calling card of the future.",
+        author: "Anna Eshoo"
+    },
+
+    {
+        content: "Sometimes life hits you in the head with a brick. Don't lose faith.",
+        author: "Steve Jobs"
+    },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+    // {
+    //     content: "",
+    //     author: ""
+    // },
+
+
+
 ];
 
 

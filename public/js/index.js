@@ -2,6 +2,7 @@ import quotes from "./quotes.js";
 
 let blobURL;
 let currentBlob;
+let imageList = [];
 
 const image = document.getElementById("image");
 
@@ -11,14 +12,48 @@ const loadingImg = document.getElementById("loading");
 
 const quote = document.getElementById("quote");
 
-let timerId = null;
+const timeDiv = document.getElementById("time");
+
 let currentInfo = null;
 let slideShowActive = false;
 let firstSlide = false;
 let hearted = false;
 let hidden = false;
 
+let countdown = 30;
+let countdownActive = false;
+let countdownTimer = null;
+
+let quoteIndex = 0;
+let showInfo = false;
+
 loadList();
+
+function showCountdown () {
+    const date = new Date();
+    const time = countdown;
+
+    if (countdownActive) {
+        timeDiv.innerHTML = time;
+    }
+    else {
+        timeDiv.innerHTML = "";
+    }
+
+    countdown -= 1;
+
+    if (countdown == 0) {
+        nextPhoto();
+    }
+
+    if (countdown < 0) {
+        countdown = 30;
+    }
+}
+
+function hideCountdown() {
+    timeDiv.innerHTML = "";
+}
 
 function errorPopup (response) {
     stopProgress();
@@ -31,14 +66,10 @@ function exceptionPopup (err) {
 }
 
 function startProgress () {
-    //console.log("starting progress")
-    //document.body.style.backgroundImage = "url(public/image/loading-clear.gif)";
     loadingImg.style.display = "block";
 }
 
 function stopProgress () {
-    //console.log("stopping progress")
-    //document.body.style.backgroundImage = "url()";
     loadingImg.style.display = "none";
 }
 
@@ -77,6 +108,7 @@ function loadImage (id, imgInfo) {
                 // Then create a local URL for that image
                 blobURL = URL.createObjectURL(blob);
                 image.src = blobURL;
+                //image.style.animationIterationCount = "1";
 
                 hearted = false;
                 currentBlob = blob;
@@ -129,6 +161,7 @@ function visitedPhoto (imageId) {
     sessionStorage.setItem("imageId", `${id}`);
 
     removeAvailable(id);
+
 }
 
 // remove the specified photo id from the available list
@@ -160,48 +193,63 @@ function setPhotoInfo (info, blob) {
 
     const heart = !hearted ? "♡" : "❤️";
 
-    let values = `<p><button><a href='${info.url}'>${info.author} on Unsplash</a></button><button onclick="setHeart()">${heart}</button></p>`;
+    let values = `<button class="icon"><a href='${info.url}'>${info.author}<br> on Unsplash</a></button><br>`;
 
-    if (blobURL) {
-        let filename = info.author + "-" + info.id + ".jpg";
-
-        filename = replaceAll(filename, " ", "-");
-
-        values += `<button><a download='${filename}' href='${blobURL}'>Download ↓</a></button>`;
-    }
-
-    if (timerId == null) {
-        values += `<button onclick="nextPhoto()">Next ⇥</button>`;
-
-        values += `<button onclick="startSlideShow()">Play ►</button>`;
+    if (!countdownActive) {
+        values += `<button class="icon" onclick="startSlideShow()"> ► Play</button>`;
+        values += `<button class="icon" onclick="nextPhoto()">⇥ Next</button>`;
+        // values += `<button class="icon" onclick="setHeart()">${heart}</button>`;
     } else {
-        values += `<button onclick="stopSlideShow()">Stop ◼︎</button>`;
+        values += `<button class="icon" onclick="stopSlideShow()">◼︎ Stop</button>`;
     }
 
-    let megaPixel = getFriendlySize(info.width * info.height, "P");
+    // if (blobURL) {
+    let filename = info.author + "-" + info.id + ".jpg";
 
-    let dimensions = "Pixels=" + megaPixel+" (" + info.width + " x " + info.height + ")";
+    filename = replaceAll(filename, " ", "-");
 
-    values += `<p>ID=${info.id}`;
-    if (blob) {
-        values += `  Size=${getFriendlySize(blob.size, "B")}</p>`;
+    const checkedInfo = showInfo ? "☒":"☐";
+
+    values += `<br><button class="icon" onclick="toggleShowInfo()">${checkedInfo} Info</button>`;
+    values += `<button class="icon"><a download='${filename}' href='${info.download_url}'>↓ Download</a></button>`;
+    // }
+
+    if (showInfo) {
+        let megaPixel = getFriendlySize(info.width * info.height, "P");
+
+        let dimensions = "Pixels=" + megaPixel + " (" + info.width + " x " + info.height + ")";
+
+        values += `<p>ID=${info.id}`;
+        if (blob) {
+            values += `  Size=${getFriendlySize(blob.size, "B")}</p>`;
+        }
+        else {
+            values += "</p>";
+        }
+        values += `<p>${dimensions}</p>`;
+
+        values += `<p>Images=${imageList.length} Quotes=${quotes.length}</p>`
     }
-    else {
-        values += "</p>";
-    }
-    values += `<p>${dimensions}</p>`;
 
     photoInfo.innerHTML = values;
     document.title = info.author;
 
     if (quotes.length > 0) {
-        const currentquote = quotes[ randomIntFromInterval(0, quotes.length - 1) ];
+
+        const currentquote = quotes[ quoteIndex ];
 
         const quoteText = `${currentquote.content}<br><em class="author">${currentquote.author}</em>`;
 
         quote.innerHTML = quoteText;
     }
 }
+
+function toggleShowInfo() {
+    showInfo = !showInfo;
+    setPhotoInfo(currentInfo, currentBlob);
+}
+
+window.toggleShowInfo = toggleShowInfo;
 
 function getFriendlySize (size, suffix) {
 
@@ -219,22 +267,27 @@ function getFriendlySize (size, suffix) {
 function nextPhoto () {
     selectFromList();
 }
-window.nextPhoto = nextPhoto
+window.nextPhoto = nextPhoto;
 
 function startSlideShow () {
     firstSlide = true;
     nextPhoto();
-    timerId = window.setInterval(nextPhoto, 30000);
+    //timerId = window.setInterval(nextPhoto, 30000);
     slideShowActive = true;
+
+    countdown = 30;
+    countdownActive = true;
+    countdownTimer = setInterval(showCountdown, 1000);
 }
 
 window.startSlideShow = startSlideShow;
 
 function stopSlideShow () {
-    window.clearInterval(timerId);
-    timerId = null;
-    setPhotoInfo(currentInfo, currentBlob);
     slideShowActive = false;
+    countdownActive = false;
+    window.clearInterval(countdownTimer);
+    setPhotoInfo(currentInfo, currentBlob);
+    hideCountdown();
 }
 
 window.stopSlideShow = stopSlideShow;
@@ -246,13 +299,19 @@ function setHeart () {
 
 window.setHeart = setHeart;
 
-function randomIntFromInterval (min, max) { // min and max included 
+function randomInt (min, max) { // min and max included 
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 async function loadList () {
 
     const imageId = sessionStorage.getItem("imageId");
+
+    quoteIndex = sessionStorage.getItem("quoteId");
+
+    if (!quoteIndex) {
+        quoteIndex = 0;
+    }
 
     console.log("get imageId = ", imageId);
 
@@ -275,7 +334,7 @@ async function loadList () {
             return loaded;
         };
 
-        getEntireList(imagesLoaded);
+        imageList = await getEntireList(imagesLoaded);
 
     } else {
 
@@ -284,9 +343,13 @@ async function loadList () {
         const imagesLoaded = (list) => {
 
             if (list && !loaded) {
-                const selection = list[ randomIntFromInterval(0, list.length - 1) ];
+                const selection = list[ randomInt(0, list.length - 1) ];
 
                 const id = selection.id;
+
+                quoteIndex = randomInt(0, quotes.length - 1);
+
+                sessionStorage.setItem("quoteId", quoteIndex);
 
                 console.log(`Loading image ${id}`);
 
@@ -297,7 +360,7 @@ async function loadList () {
             return loaded;
         };
 
-        getEntireList(imagesLoaded);
+        imageList = await getEntireList(imagesLoaded);
 
     }
 }
@@ -449,13 +512,17 @@ image.onload = function () {
 
 async function selectFromList () {
 
-    const list = await getEntireList();
+    const list = imageList;
 
     if (list) {
 
         let available = readList('available');
 
-        const randomId = available[ randomIntFromInterval(0, available.length - 1) ];
+        const randomId = available[ randomInt(0, available.length - 1) ];
+
+        quoteIndex = randomInt(0, quotes.length - 1);
+
+        sessionStorage.setItem("quoteId", quoteIndex);
 
         const foundIndex = list.findIndex(item => randomId == item.id);
 
