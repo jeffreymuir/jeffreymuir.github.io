@@ -1,4 +1,5 @@
 import quotes from "./quotes.js";
+'use strict'
 
 let blobURL;
 let currentBlob;
@@ -183,6 +184,17 @@ function removeAvailable (id) {
     }
 }
 
+function getAvailableCount() {
+    const available = readList('available');
+    let count = 0;
+
+    if (available) {
+        count = available.length;
+    }
+
+    return count;
+}
+
 function replaceAll (str, find, replace) {
     return str.replace(new RegExp(find, 'g'), replace);
 }
@@ -229,6 +241,7 @@ function setPhotoInfo (info, blob) {
         values += `<p>${dimensions}</p>`;
 
         values += `<p>Images=${imageList.length} Quotes=${quotes.length}</p>`
+        values += `<p>Availalble=${getAvailableCount()}</p>`
     }
 
     photoInfo.innerHTML = values;
@@ -334,7 +347,12 @@ async function loadList () {
             return loaded;
         };
 
-        imageList = await getEntireList(imagesLoaded);
+        try {
+            imageList = await getEntireList(imagesLoaded);
+        }
+        catch(err) {
+            console.log(err);
+        }
 
     } else {
 
@@ -360,7 +378,12 @@ async function loadList () {
             return loaded;
         };
 
+        try {
         imageList = await getEntireList(imagesLoaded);
+        }
+        catch(err) {
+            console.log(err);
+        }
 
     }
 }
@@ -545,7 +568,7 @@ async function getImageListByURL (url) {
     if (response && response.ok) {
         const list = await response.json();
 
-        next = response.headers.get("link");
+        const next = response.headers.get("link");
 
         console.log(next);
 
