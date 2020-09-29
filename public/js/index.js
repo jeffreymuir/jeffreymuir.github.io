@@ -123,6 +123,7 @@ function loadImage (id, imgInfo) {
         }).catch(e => {
             console.log(e);
             stopProgress();
+            removeAvailable(id);
             //exceptionPopup(e);
         });
 
