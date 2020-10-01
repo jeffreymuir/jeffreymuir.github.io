@@ -392,30 +392,79 @@ const quotes = [
         author: "Steve Jobs"
     },
 
-    // {
-    //     content: "",
-    //     author: ""
-    // },
+    {
+        content: "Change almost never fails because it's too early. It almost always fails because it's too late.",
+        author: "Seth Godin"
+    },
 
-    // {
-    //     content: "",
-    //     author: ""
-    // },
+    {
+        content: "I define anxiety as experiencing failure in advance.",
+        author: "Seth Godin"
+    },
 
-    // {
-    //     content: "",
-    //     author: ""
-    // },
+    {
+        content: "The secret to being wrong isn't to avoid being wrong! The secret is being willing to be wrong. The secret is realizing that wrong isn't fatal.",
+        author: "Seth Godin"
+    },
 
-    // {
-    //     content: "",
-    //     author: ""
-    // },
+    {
+        content: "The secret of leadership is simple: Do what you believe in. Paint a picture of the future. Go there. People will follow.",
+        author: "Seth Godin"
+    },
 
-    // {
-    //     content: "",
-    //     author: ""
-    // },
+    {
+        content: "An artist is someone who uses bravery, insight, creativity, and boldness to challenge the status quo. And an artist takes it personally.",
+        author: "Seth Godin"
+    },
+
+    {
+         content: 
+`People don't believe what you tell them.
+They rarely believe what you show them.
+They often believe what their friends tell them.
+They always believe what they tell themselves.`,
+         author: "Seth Godin"
+     },
+
+    {
+        content: "If you are deliberately trying to create a future that feels safe, you will willfully ignore the future that is likely.",
+        author: "Seth Godin"
+    },
+
+    {
+        content: "How dare you settle for less when the world has made it so easy for you to be remarkable?",
+        author: "Seth Godin"
+    },
+
+    {
+        content: "Soon is not as good as now.",
+        author: "Seth Godin"
+    },
+
+    {
+        content: "There are two mistakes one can make along the road to truth. Not going all the way, and not starting.",
+        author: "Siddhrtha Gautama"
+    },
+
+    {
+        content: "In a battle between two ideas, the best one doesn't necessarily win. No, the idea that wins is the one with the most fearless heretic behind it.",
+        author: "Seth Godin"
+    },
+
+    {
+        content: "Change isn't made by asking permission. Change is made by asking forgiveness, later.",
+        author: "Seth Godin"
+    },
+
+    {
+        content: "Reject the tyranny of picked. Pick yourself.",
+        author: "Seth Godin"
+    },
+
+    {
+        content: "Art is a personal act of courage, something one human does that creates change in another.",
+        author: "Seth Godin"
+    },
 
     // {
     //     content: "",

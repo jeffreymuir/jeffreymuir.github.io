@@ -1,60 +1,80 @@
 import quotes from "./quotes.js";
-'use strict'
+'use strict';
 
 let blobURL;
 let currentBlob;
 let imageList = [];
 
 const image = document.getElementById("image");
-
 const photoInfo = document.getElementById("info");
-
 const loadingImg = document.getElementById("loading");
-
 const quote = document.getElementById("quote");
-
-const timeDiv = document.getElementById("time");
+const podcastAudio = document.getElementById("podcastAudio");
+const countdownDiv = document.getElementById("countdown");
+const unsplashURL = document.getElementById("unsplashURL");
+const start = document.getElementById("startSlideshow");
+const stop = document.getElementById("stopSlideshow");
+const next = document.getElementById("nextPhoto");
+const download = document.getElementById("downloadPhoto");
+const imageDetails = document.getElementById("imageDetails");
+const infoButton = document.getElementById("infoButton");
 
 let currentInfo = null;
-let slideShowActive = false;
-let firstSlide = false;
 let hearted = false;
 let hidden = false;
 
-let countdown = 30;
+const COUNTDOWN_TIME = 30;
+let countdown = COUNTDOWN_TIME;
 let countdownActive = false;
 let countdownTimer = null;
 
 let quoteIndex = 0;
 let showInfo = false;
 
+let podcastPlaying = false;
+
+if (podcastAudio) {
+    podcastAudio.onplay = () => {
+        console.log("Play pressed");
+        podcastPlaying = true;
+        writeAtomic("podcastPlaying", podcastPlaying);
+    };
+
+    podcastAudio.onpause = () => {
+        console.log("Pause pressed");
+        podcastPlaying = false;
+        writeAtomic("podcastPlaying", podcastPlaying);
+    };
+}
+
 loadList();
 
+function setCountdownDiv (time) {
+    if (countdownDiv) {
+        if (isCountdownActive()) {
+            showInline(countdownDiv);
+            countdownDiv.innerHTML = time;
+        }
+        else {
+            hide(countdownDiv);
+            countdownDiv.innerHTML = "";
+        }
+    }
+}
+
 function showCountdown () {
-    const date = new Date();
     const time = countdown;
 
-    if (countdownActive) {
-        timeDiv.innerHTML = time;
-    }
-    else {
-        timeDiv.innerHTML = "";
-    }
+    setCountdownDiv(time);
 
     countdown -= 1;
 
     if (countdown == 0) {
+        countdown = COUNTDOWN_TIME;
         nextPhoto();
     }
-
-    if (countdown < 0) {
-        countdown = 30;
-    }
 }
 
-function hideCountdown() {
-    timeDiv.innerHTML = "";
-}
 
 function errorPopup (response) {
     stopProgress();
@@ -78,12 +98,14 @@ function loadImage (id, imgInfo) {
 
     startProgress();
 
-    const url = imgInfo.download_url;
+    //const url = imgInfo.download_url;
 
-    if (!slideShowActive || firstSlide) {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
-        firstSlide = false;
-    }
+    const url = `https://picsum.photos/id/${id}/${width}/${height}`;
+
+    console.log(url);
 
     fetch(url)
         .then(response => {
@@ -109,7 +131,6 @@ function loadImage (id, imgInfo) {
                 // Then create a local URL for that image
                 blobURL = URL.createObjectURL(blob);
                 image.src = blobURL;
-                //image.style.animationIterationCount = "1";
 
                 hearted = false;
                 currentBlob = blob;
@@ -124,7 +145,6 @@ function loadImage (id, imgInfo) {
             console.log(e);
             stopProgress();
             removeAvailable(id);
-            //exceptionPopup(e);
         });
 
 }
@@ -153,6 +173,30 @@ function writeList (listName, list) {
     }
     catch {
         console.log("Unable to set data into storage for " + listName);
+    }
+}
+
+function writeAtomic (key, value) {
+    try {
+        console.log("Writing " + key + "=" + value);
+        localStorage.setItem(key, value);
+    }
+    catch {
+        console.log("Unable to set data into storage for " + key);
+    }
+}
+
+function readAtomic (key) {
+    try {
+        const value = localStorage.getItem(key);
+
+        console.log("Reading " + key + "=" + value);
+
+        return value;
+    }
+    catch {
+        console.log("Unable to get data into storage for " + key);
+        return null;
     }
 }
 
@@ -185,7 +229,7 @@ function removeAvailable (id) {
     }
 }
 
-function getAvailableCount() {
+function getAvailableCount () {
     const available = readList('available');
     let count = 0;
 
@@ -200,54 +244,90 @@ function replaceAll (str, find, replace) {
     return str.replace(new RegExp(find, 'g'), replace);
 }
 
+function hide (el) {
+    el.style.display = "none";
+}
+
+function showBlock (el) {
+    el.style.display = "block";
+}
+
+function showInline (el) {
+    el.style.display = "inline";
+}
+
+function readjustInfoButtons () {
+
+    if (!isCountdownActive()) {
+        console.log("No countdown");
+        showInline(start);
+        showInline(next);
+        hide(stop);
+        hide(countdownDiv);
+    } else {
+        hide(start);
+        hide(next);
+        showInline(stop);
+        showInline(countdownDiv);
+        console.log("Countdown active");
+    }
+}
+
 function setPhotoInfo (info, blob) {
 
     currentInfo = info;
 
-    const heart = !hearted ? "♡" : "❤️";
+    //const heart = !hearted ? "♡" : "❤️";
 
-    let values = `<button class="icon"><a href='${info.url}'>${info.author}<br> on Unsplash</a></button><br>`;
+    unsplashURL.innerHTML = `${info.author} on Unsplash`;
+    unsplashURL.href = `${info.url}`;
 
-    if (!countdownActive) {
-        values += `<button class="icon" onclick="startSlideShow()"> ► Play</button>`;
-        values += `<button class="icon" onclick="nextPhoto()">⇥ Next</button>`;
-        // values += `<button class="icon" onclick="setHeart()">${heart}</button>`;
-    } else {
-        values += `<button class="icon" onclick="stopSlideShow()">◼︎ Stop</button>`;
-    }
+    readjustInfoButtons();
 
-    // if (blobURL) {
     let filename = info.author + "-" + info.id + ".jpg";
 
     filename = replaceAll(filename, " ", "-");
 
-    const checkedInfo = showInfo ? "☒":"☐";
+    const checkedInfo = showInfo ? "☒" : "☐";
 
-    values += `<br><button class="icon" onclick="toggleShowInfo()">${checkedInfo} Info</button>`;
-    values += `<button class="icon"><a download='${filename}' href='${info.download_url}'>↓ Download</a></button>`;
-    // }
+    download.download = `${filename}`;
+    download.href = `${info.download_url}`;
 
     if (showInfo) {
+
+        infoButton.innerHTML = `${checkedInfo} Info`;
         let megaPixel = getFriendlySize(info.width * info.height, "P");
 
         let dimensions = "Pixels=" + megaPixel + " (" + info.width + " x " + info.height + ")";
 
-        values += `<p>ID=${info.id}`;
+        let details = `<p>ID=${info.id}`;
+
         if (blob) {
-            values += `  Size=${getFriendlySize(blob.size, "B")}</p>`;
+            details += `  Size=${getFriendlySize(blob.size, "B")}</p>`;
         }
         else {
-            values += "</p>";
+            details += "</p>";
         }
-        values += `<p>${dimensions}</p>`;
 
-        values += `<p>Images=${imageList.length} Quotes=${quotes.length}</p>`
-        values += `<p>Availalble=${getAvailableCount()}</p>`
+        details += `<p>${dimensions}</p>`;
+
+        details += `<p>Images=${imageList.length} Quotes=${quotes.length}</p>`;
+        details += `<p>Availalble=${getAvailableCount()}</p>`;
+        details += `<p>QuoteId=${quoteIndex}</p>`;
+
+        imageDetails.innerHTML = details;
+    }
+    else {
+        infoButton.innerHTML = `${checkedInfo} Info`;
+        imageDetails.innerHTML = "";
     }
 
-    photoInfo.innerHTML = values;
     document.title = info.author;
 
+    setQuote();
+}
+
+function setQuote () {
     if (quotes.length > 0) {
 
         const currentquote = quotes[ quoteIndex ];
@@ -258,7 +338,7 @@ function setPhotoInfo (info, blob) {
     }
 }
 
-function toggleShowInfo() {
+function toggleShowInfo () {
     showInfo = !showInfo;
     setPhotoInfo(currentInfo, currentBlob);
 }
@@ -284,27 +364,45 @@ function nextPhoto () {
 window.nextPhoto = nextPhoto;
 
 function startSlideShow () {
-    firstSlide = true;
-    nextPhoto();
-    //timerId = window.setInterval(nextPhoto, 30000);
-    slideShowActive = true;
+    startTimer();
 
-    countdown = 30;
-    countdownActive = true;
-    countdownTimer = setInterval(showCountdown, 1000);
+    readjustInfoButtons();
+
+    setCountdownDiv(COUNTDOWN_TIME);
+
+    nextPhoto();
 }
 
 window.startSlideShow = startSlideShow;
 
+function startTimer () {
+    countdown = COUNTDOWN_TIME;
+    setCountdownActive(true);
+    countdownTimer = setInterval(showCountdown, 1000);
+}
+
+function isCountdownActive () {
+    return countdownActive;
+}
+
+function setCountdownActive (value) {
+    countdownActive = value;
+    writeAtomic("countdownActive", value);
+}
+
+
 function stopSlideShow () {
-    slideShowActive = false;
-    countdownActive = false;
-    window.clearInterval(countdownTimer);
+    stopTimer();
     setPhotoInfo(currentInfo, currentBlob);
-    hideCountdown();
 }
 
 window.stopSlideShow = stopSlideShow;
+
+function stopTimer () {
+    setCountdownActive(false);
+    window.clearInterval(countdownTimer);
+    countdownTimer = null;
+}
 
 function setHeart () {
     hearted = !hearted;
@@ -323,9 +421,13 @@ async function loadList () {
 
     quoteIndex = sessionStorage.getItem("quoteId");
 
+    const active = readAtomic("countdownActive");
+
     if (!quoteIndex) {
         quoteIndex = 0;
     }
+
+    setQuote();
 
     console.log("get imageId = ", imageId);
 
@@ -350,8 +452,16 @@ async function loadList () {
 
         try {
             imageList = await getEntireList(imagesLoaded);
+
+            if (active != null) {
+
+                if (active === "true") {
+                    startSlideShow();
+                }
+            }
+
         }
-        catch(err) {
+        catch (err) {
             console.log(err);
         }
 
@@ -380,9 +490,16 @@ async function loadList () {
         };
 
         try {
-        imageList = await getEntireList(imagesLoaded);
+            imageList = await getEntireList(imagesLoaded);
+
+            if (active != null) {
+
+                if (active === "true") {
+                    startSlideShow();
+                }
+            }
         }
-        catch(err) {
+        catch (err) {
             console.log(err);
         }
 
@@ -518,13 +635,12 @@ image.onclick = function () {
         hidden = !hidden;
 
         if (hidden) {
-            //image.style.display = "none";
-            photoInfo.style.display = "none";
-            quote.style.display = "none";
+            hide(photoInfo);
+            hide(quote);
         }
         else {
-            photoInfo.style.display = "block";
-            quote.style.display = "block";
+            showBlock(photoInfo);
+            showBlock(quote);
         }
     }
 };
@@ -612,3 +728,43 @@ async function getImageList (page, limit) {
 
     return getImageListByURL(url);
 }
+
+let lastAudioTimeWrite = 0;
+const audioWriteInterval = 5.0;
+
+function audioTimeUpdate (event) {
+    const currentTime = podcastAudio.currentTime;
+
+    if (currentTime) {
+        if (lastAudioTimeWrite == 0) {
+            writeAtomic('audioTime', currentTime);
+            lastAudioTimeWrite = currentTime;
+        }
+        else if (currentTime > (lastAudioTimeWrite + audioWriteInterval)) {
+            writeAtomic('audioTime', currentTime);
+            lastAudioTimeWrite = currentTime;
+        }
+        else {
+            // skipping this notification
+        }
+    }
+
+}
+
+window.audioTimeUpdate = audioTimeUpdate;
+
+function canPlay() {
+    const audioTime = readAtomic('audioTime');
+    const playing = readAtomic('podcastPlaying');
+
+    if (audioTime && podcastAudio.currentTime === 0) {
+        podcastAudio.currentTime = audioTime;
+        console.log("Adjusting time to " + audioTime);
+    }
+
+    if(playing && playing === "true") {
+        podcastAudio.play();
+    }
+}
+
+window.canPlay = canPlay;

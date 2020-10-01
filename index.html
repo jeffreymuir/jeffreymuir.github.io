@@ -1,23 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <title>Images</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="favicon.ico">
-    <link rel="stylesheet" href="public/css/styles.css">
-</head>
+    <link rel="icon" href="favicon.ico" />
+    <link rel="stylesheet" href="public/css/styles.css" />
+  </head>
 
-<body>
-    <div class="full"></div><img class="main" id="image" alt="Unsplash image" src="public/image/pasture.jpg" /></div>
-    <div class="quote" id="quote">
+  <body>
+    <div class="full">
+      <img
+        class="main"
+        id="image"
+        alt="Unsplash image"
+        src="public/image/pasture.jpg"
+      />
     </div>
+
+    <div class="quote" id="quote"></div>
     <img class="loading" id="loading" src="public/image/loading-clear.gif" />
-    <div id="info" ></div>
-    <div id="time"></div>
+    <div id="info">
+      <div class="inText" style="margin: 10px 0">
+        <p>Podcast:</p>
+        <span><p>Seth Godin - Innovation Show</p></span>
+
+        <audio id="podcastAudio" controls 
+            ontimeupdate="audioTimeUpdate()"
+            oncanplay="canPlay()">
+          <source
+            src="https://theinnovationshow.io/download-episode/892/seth-godin-on-meatball-sundaes-pete-dice-on-hackathons-vstream-group-on-innovation-cultures.mp3?dest-id=422182"
+          />
+          <!-- <source src="https://theinnovationshow.io/episode-player/1824/ep-237-end-of-competitive-advantage-how-to-keep-your-strategy-moving-as-fast-as-your-business-with-rita-mcgrath.mp3?dest-id=422182&_=4"> -->
+        </audio>
+      </div>
+
+      <p class="inText">Photo:</p>
+      <button id="unsplash" class="icon"><a id="unsplashURL" href="https://unsplash.com/@jeffmuir">Jeff Muir on Unsplash</a></button><br />
+
+      <button id="startSlideshow" class="icon" onclick="startSlideShow()">► Play</button>
+      <button id="nextPhoto" class="icon" onclick="nextPhoto()">⇥ Next</button>
+      <button id="stopSlideshow" class="icon" style="display:none" onclick="stopSlideShow()">◼︎ Stop</button>
+      <span class="icon" id="countdown" style="display:none"></span>
+
+      <br /><button id="infoButton" class="icon" onclick="toggleShowInfo()">☐ Info</button>
+      <button class="icon">
+        <a id="downloadPhoto" href="">↓ Download</a>
+      </button>
+
+      <div id="imageDetails"></div>
+    </div>
     <script type="module" src="public/js/index.js"></script>
     <script type="module" src="public/js/quotes.js"></script>
-
-</body>
-
+  </body>
 </html>
